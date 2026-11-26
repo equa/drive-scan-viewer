@@ -7,8 +7,8 @@ It does not scan anything itself. It reads ncdu JSON exports from `data/`.
 ## Making scans
 
 ```sh
-ncdu -o /path/to/data/users-username.json /<drive path>/Users/username   # one scan per directory works fine
-ncdu -o- /<drive path>/Projects | gzip > /path/to/data/projects.json.gz # compressed is also supported
+nice -19 ncdu -e -x -o /path/to/data/users-username.json /<drive path>/Users/username   # one scan per directory works fine
+nice -19 ncdu -e -x -o- /<drive path>/Projects | gzip > /path/to/data/projects.json.gz # compressed is also supported
 ```
 
 Any `*.json` or `*.json.gz` file under `data/` (subfolders included) appears in the scan picker.
