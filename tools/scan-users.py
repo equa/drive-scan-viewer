@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 """Run one ncdu scan per sub-directory of a root, writing <name>.json into a data dir.
 
-Usage: scan-users.py [ROOT] [DATA_DIR]
 Log goes to DATA_DIR/scan-users.log and to the terminal.
 """
 
 from pathlib import Path
+import argparse
 import logging
+import random
 import re
 import subprocess
 import sys
@@ -42,6 +43,17 @@ def setup_logging(log_file: Path):
     log.setLevel(logging.INFO)
 
 
+ANSI_ESCAPE = re.compile(r"\x1b(\[[0-?]*[ -/]*[@-~]|[@-_])")
+
+
+def output_lines(text: str):
+    # ncdu can emit bare newlines or terminal escape codes even with -0; skip those
+    for line in text.splitlines():
+        line = ANSI_ESCAPE.sub("", line).strip()
+        if line:
+            yield line
+
+
 def run_scanner(root: Path, json_output: Path) -> bool:
     # Write to a .part file and rename when done, so the web app never sees a half-written scan
     tmp_output = json_output.with_name(json_output.name + ".part")
@@ -55,9 +67,9 @@ def run_scanner(root: Path, json_output: Path) -> bool:
         log.error("Could not start ncdu for %s: %s", root, e)
         return False
 
-    for line in result.stdout.splitlines():
+    for line in output_lines(result.stdout):
         log.info("  stdout: %s", line)
-    for line in result.stderr.splitlines():
+    for line in output_lines(result.stderr):
         log.warning("  stderr: %s", line)
 
     if result.returncode != 0:
@@ -71,27 +83,46 @@ def run_scanner(root: Path, json_output: Path) -> bool:
     return True
 
 
-def scan_subdirs(root: Path, data_dir: Path) -> int:
+def scan_subdirs(root: Path, data_dir: Path, max_dirs: int | None = None) -> int:
+    dirs = [d for d in sub_dirs_iter(root) if not d.name.startswith(".")]
+    if max_dirs is not None and max_dirs < len(dirs):
+        dirs = sorted(random.sample(dirs, max_dirs))
+        log.info("Test mode: scanning %d random dirs: %s", max_dirs, ", ".join(d.name for d in dirs))
     failed = 0
-    for item in sub_dirs_iter(root):
-        if item.name.startswith("."):
-            continue
+    for item in dirs:
         json_output = data_dir / (clean_name(item.name) + ".json")
         if not run_scanner(item, json_output):
             failed += 1
     return failed
 
 
-def main():
-    users_root = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_ROOT
-    data_dir = Path(sys.argv[2]) if len(sys.argv) > 2 else Path.cwd()
-    setup_logging(data_dir / "scan-users.log")
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Run one ncdu scan per sub-folder of ROOT and write <name>.json into DATA_DIR. "
+                    "Log goes to DATA_DIR/scan-users.log and to the terminal.")
+    parser.add_argument("root", nargs="?", type=Path, default=DEFAULT_ROOT,
+                        help="folder whose sub-folders are scanned (default: %(default)s)")
+    parser.add_argument("data_dir", nargs="?", type=Path, default=Path.cwd(),
+                        help="where the .json files and the log go (default: current directory)")
+    parser.add_argument("--max-dirs", type=int, metavar="N",
+                        help="test mode: scan only N randomly chosen sub-folders")
+    args = parser.parse_args()
+    if args.max_dirs is not None and args.max_dirs < 1:
+        parser.error("--max-dirs must be at least 1")
+    if not args.data_dir.is_dir():
+        parser.error(f"data dir does not exist: {args.data_dir}")
+    return args
 
-    log.info("Start: %s -> %s", users_root, data_dir)
+
+def main():
+    args = parse_args()
+    setup_logging(args.data_dir / "scan-users.log")
+
+    log.info("Start: %s -> %s", args.root, args.data_dir)
     try:
-        failed = scan_subdirs(users_root, data_dir)
+        failed = scan_subdirs(args.root, args.data_dir, args.max_dirs)
     except OSError as e:
-        log.error("Cannot read %s: %s", users_root, e)
+        log.error("Cannot read %s: %s", args.root, e)
         return 1
     log.info("Finished, %d failed", failed)
     return 1 if failed else 0
