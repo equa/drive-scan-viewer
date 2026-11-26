@@ -55,6 +55,9 @@ header {
   padding: 8px 16px; background: var(--head); border-bottom: 1px solid var(--line);
 }
 header h1 { font-size: 15px; margin: 0 8px 0 0; font-weight: 700; }
+.readonly {
+  font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px;
+}
 .btn, select, input[type=text], input[type=search] {
   background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 4px 10px;
 }

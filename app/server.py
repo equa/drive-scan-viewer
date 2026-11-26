@@ -4,7 +4,7 @@ Stdlib only. Configuration via environment:
 
   DATA_DIR     directory with *.json / *.json.gz ncdu exports (default ./data)
   HOST, PORT   listen address (default 0.0.0.0:8080)
-  MAX_LOADED   number of scans kept in memory at once (default 8)
+  MAX_LOADED   max scans kept in memory, least recently used dropped (default 0 = all)
   PRELOAD      "1" to parse all scans in the background at startup (default 1)
   PATH_MAP     rewrite scan paths for display, e.g. "/<drive path>=\\\\nas\\q"
                (several separated by ";")
@@ -32,7 +32,7 @@ log = logging.getLogger("nasbrowser")
 
 DATA_DIR = Path(os.environ.get("DATA_DIR", "data")).resolve()
 STATIC_DIR = Path(__file__).with_name("static")
-MAX_LOADED = int(os.environ.get("MAX_LOADED", "8"))
+MAX_LOADED = int(os.environ.get("MAX_LOADED", "0"))
 PATH_MAP = [
     tuple(part.split("=", 1))
     for part in os.environ.get("PATH_MAP", "").split(";")
@@ -107,13 +107,13 @@ class Registry:
                 self._errors.pop(name, None)
                 self._loaded[name] = (mtime, scan)
                 self._loaded.move_to_end(name)
-                while len(self._loaded) > MAX_LOADED:
+                while MAX_LOADED and len(self._loaded) > MAX_LOADED:
                     self._loaded.popitem(last=False)
             _cache.clear()
             return scan
 
     def preload(self) -> None:
-        for name in list(self.files())[:MAX_LOADED]:
+        for name in list(self.files())[: MAX_LOADED or None]:
             try:
                 self.get(name)
             except ApiError:

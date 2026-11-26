@@ -123,13 +123,15 @@ const state = {
 };
 let navSeq = 0;
 
+const allSelected = () => state.sel.length === state.scans.length;
 const baseParams = () => ({ scans: state.sel.join(",") });
 
 // ---------------------------------------------------------------- URL hash
 
 function writeHash() {
   const p = new URLSearchParams();
-  p.set("scans", state.sel.join(","));
+  // omit when all are selected, so links pick up scans added later
+  if (!allSelected()) p.set("scans", state.sel.join(","));
   if (state.depth !== 5) p.set("depth", state.depth);
   if (state.color !== "folders") p.set("c", state.color);
   const crumbs = state.node?.crumbs || [];
@@ -156,7 +158,7 @@ async function applyHash() {
   const hs = readHash();
   const known = new Set(state.scans.map((x) => x.name));
   let sel = hs.scans.filter((n) => known.has(n));
-  if (!sel.length && state.scans.length) sel = [state.scans[0].name];
+  if (!sel.length) sel = state.scans.map((x) => x.name);  // default: all scans
   if (sel.join(",") !== state.sel.join(",")) resetCaches();
   state.sel = sel;
   state.depth = [3, 4, 5, 6, 8, 10].includes(hs.depth) ? hs.depth : 5;
@@ -224,7 +226,7 @@ function applyScanSelection() {
 function syncControls() {
   const n = state.sel.length;
   $("#scanButton").textContent =
-    n === 0 ? "Select scans…" : n === 1 ? state.sel[0] : `${n} scans selected`;
+    n === 0 ? "Select scans…" : n === 1 ? state.sel[0] : allSelected() ? `All scans (${n})` : `${n} scans selected`;
   $("#depth").value = String(state.depth);
   $$(".seg [data-color]").forEach((b) => b.classList.toggle("on", b.dataset.color === state.color));
 }

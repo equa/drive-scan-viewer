@@ -59,13 +59,13 @@ DATA_DIR=data python3 app/server.py
 |--------------|----------|------------------------------------------------------|
 | `DATA_DIR`   | `/data`  | Directory with ncdu exports                          |
 | `PORT`       | `8080`   | Listen port                                          |
-| `MAX_LOADED` | `8`      | Parsed scans kept in memory (LRU)                    |
-| `PRELOAD`    | `1`      | Parse the first `MAX_LOADED` scans at startup        |
+| `MAX_LOADED` | `0`      | Cap on parsed scans in memory (LRU), 0 = all         |
+| `PRELOAD`    | `1`      | Parse the scans at startup                           |
 | `PATH_MAP`   | *(none)* | `from=to[;from=to…]` display rewrite for copied paths |
 
 ## Memory and speed
 
 The server streams the JSON and packs every entry into flat arrays.
-Your sample of 120k entries parses in 0.4 s. A synthetic 1M-entry scan (89 MB JSON) took 2 s and
+A real-world scan of 120k entries parses in 0.4 s. A synthetic 1M-entry scan (89 MB JSON) took 2 s and
 ~100 MB of RAM. Split very large shares into several scans, for example one per user
-directory, and set `MAX_LOADED` to fit the host's RAM.
+directory. All scans are shown by default, so the host needs RAM for all of them together.

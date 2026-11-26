@@ -12,8 +12,9 @@ services:
       # Show paths the way colleagues know them, e.g. as a Windows share.
       # Several mappings are separated by ";". Leave empty to show scan paths as-is.
       PATH_MAP: ""
-      # How many parsed scans are kept in memory at once (least recently used are dropped).
-      MAX_LOADED: "8"
+      # Cap on parsed scans kept in memory (least recently used are dropped). 0 = keep all.
+      # All scans are shown by default, so a cap below the number of scans means re-parsing.
+      MAX_LOADED: "0"
       # Parse scans at startup so the first visitor doesn't wait.
       PRELOAD: "1"
     volumes:
