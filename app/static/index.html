@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NAS Usage Browser</title>
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%23e5a50a'/><path d='M16 16V2a14 14 0 0 1 13.3 18.3z' fill='%2326a269'/><circle cx='16' cy='16' r='5' fill='%23242424'/></svg>">
+</head>
+<body>
+<header>
+  <h1>NAS Usage</h1>
+  <div class="dropdown" id="scanPicker">
+    <button id="scanButton" class="btn" aria-haspopup="true">Select scans…</button>
+    <div class="menu" id="scanMenu" hidden></div>
+  </div>
+  <span id="scanInfo" class="muted"></span>
+  <span class="grow"></span>
+  <label class="depth">Rings
+    <select id="depth">
+      <option>3</option><option>4</option><option selected>5</option><option>6</option><option>8</option><option>10</option>
+    </select>
+  </label>
+  <span class="depth">Colour</span>
+  <div class="seg" role="group" aria-label="Ring colours">
+    <button data-color="folders" class="on" title="Colour by position, like baobab">Folders</button>
+    <button data-color="age" title="Colour by the newest modification inside each slice">Age</button>
+  </div>
+</header>
+
+<nav id="crumbs" aria-label="Location"></nav>
+
+<main>
+  <section id="left">
+    <div class="tabs" role="tablist">
+      <button role="tab" data-tab="folders" class="on">Folders</button>
+      <button role="tab" data-tab="types">File types</button>
+      <button role="tab" data-tab="age">Age</button>
+      <button role="tab" data-tab="cleanup">Cleanup</button>
+    </div>
+
+    <div class="tab" id="tab-folders">
+      <div class="thead">
+        <span class="c-name" data-sort="n">Folder</span>
+        <span class="c-size" data-sort="s">Size</span>
+        <span class="c-items" data-sort="i">Contents</span>
+        <span class="c-mod" data-sort="m" title="Newest modification anywhere inside">Modified</span>
+      </div>
+      <div id="tree" class="tbody"></div>
+    </div>
+
+    <div class="tab" id="tab-types" hidden>
+      <p class="hint">Space per file extension in <b class="here"></b>. Click a type to list its largest files.</p>
+      <div id="types" class="bars"></div>
+    </div>
+
+    <div class="tab" id="tab-age" hidden>
+      <p class="hint">Space per year of last modification (files only) in <b class="here"></b>.</p>
+      <div id="age"></div>
+    </div>
+
+    <div class="tab" id="tab-cleanup" hidden>
+      <div class="filters">
+        <div class="seg" role="group" aria-label="List kind">
+          <button data-kind="files" class="on">Largest files</button>
+          <button data-kind="dirs">Untouched folders</button>
+        </div>
+        <label>Not modified for
+          <select id="older">
+            <option value="0">any time</option>
+            <option value="365">1 year</option>
+            <option value="730">2 years</option>
+            <option value="1095">3 years</option>
+            <option value="1825">5 years</option>
+            <option value="3650">10 years</option>
+          </select>
+        </label>
+        <input id="ext" type="text" placeholder="types, e.g. zip,iso" size="12">
+        <input id="q" type="search" placeholder="name contains…" size="14">
+      </div>
+      <p id="findSummary" class="hint"></p>
+      <div class="thead">
+        <span class="c-name">Name</span>
+        <span class="c-size">Size</span>
+        <span class="c-mod">Modified</span>
+      </div>
+      <div id="found" class="tbody"></div>
+    </div>
+  </section>
+
+  <section id="right">
+    <div id="legend" hidden></div>
+    <svg id="ring" role="img" aria-label="Ring chart of disk usage"></svg>
+    <div id="ringHint" class="muted">Click a segment to open it · click the centre to go up</div>
+  </section>
+</main>
+
+<div id="tooltip" hidden></div>
+<div id="toast" hidden></div>
+<div id="busy" hidden><div class="spinner"></div><span id="busyText">Loading…</span></div>
+
+<script src="app.js"></script>
+</body>
+</html>

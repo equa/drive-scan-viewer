@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+# scan exports contain real NAS file names - keep them out of git
+data/*
+!data/.gitkeep

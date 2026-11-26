@@ -1,0 +1,21 @@
+services:
+  nasbrowser:
+    build:
+      context: .
+      dockerfile: Containerfile
+    image: localhost/nasbrowser:latest
+    container_name: nasbrowser
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Show paths the way colleagues know them, e.g. as a Windows share.
+      # Several mappings are separated by ";". Leave empty to show scan paths as-is.
+      PATH_MAP: ""
+      # How many parsed scans are kept in memory at once (least recently used are dropped).
+      MAX_LOADED: "8"
+      # Parse scans at startup so the first visitor doesn't wait.
+      PRELOAD: "1"
+    volumes:
+      # Read-only; ":z" relabels for SELinux (Fedora/RHEL hosts).
+      - ./data:/data:ro,z
