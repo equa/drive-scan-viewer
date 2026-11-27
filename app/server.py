@@ -259,7 +259,7 @@ def api_scans(_q: dict) -> dict:
         item = {"name": name, "bytes": st.st_size, "fileMtime": int(st.st_mtime), "loaded": bool(scan)}
         if scan:
             item.update(
-                root=scan.name(0),
+                root=display_path(scan, 0),
                 timestamp=scan.meta.get("timestamp"),
                 entries=len(scan),
                 dsize=scan.dsize[0],
