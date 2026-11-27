@@ -37,6 +37,17 @@ g-drive-cleanup.py --restore cfd         # back again (--from archive|trash if i
 adds a timestamp to the name. Moves are plain renames and fail rather than copy across drives. Each move is
 logged to `cleanup.log` in the archive or trash folder.
 
+`tools/g-drive-cleanup.ps1` does the same for Windows users without Python, with PowerShell-style options
+(`-Archive`, `-Trash`, `-Restore`, `-From`, `-KeepBoth`, `-DryRun`):
+
+```powershell
+cd G:\Users\x\Projects\A
+powershell -ExecutionPolicy Bypass -File \path\to\g-drive-cleanup.ps1 -Archive cfd docs
+```
+
+`-ExecutionPolicy Bypass` is only needed where script execution is restricted (the default on Windows);
+`Get-Help .\g-drive-cleanup.ps1 -Full` shows the options.
+
 ## Running
 
 ```sh
