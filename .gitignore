@@ -3,3 +3,8 @@ __pycache__/
 # scan exports contain real NAS file names - keep them out of git
 data/*
 !data/.gitkeep
+# scan-users.py output when run with the repo as data dir
+*.json
+*.json.gz
+*.json.part
+*.log
