@@ -8,3 +8,5 @@ data/*
 *.json.gz
 *.json.part
 *.log
+# built Windows exe (tools/g-drive-cleanup)
+*.exe

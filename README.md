@@ -50,6 +50,27 @@ powershell -ExecutionPolicy Bypass -File \path\to\g-drive-cleanup.ps1 -Archive c
 `-ExecutionPolicy Bypass` is only needed where script execution is restricted (the default on Windows);
 `Get-Help .\g-drive-cleanup.ps1 -Full` shows the options.
 
+### Right-click menu on Windows
+
+`tools/g-drive-cleanup/` is a Go version for people who never open a terminal. It adds a "G-drive cleanup"
+entry to the Explorer right-click menu for files and folders, with "Move to archive", "Move to trash" and
+"Restore to original place" (for an item picked inside `0_ARCHIVE___` or `0_TRASH___`). It asks once before
+moving, also when many items are selected, and shows errors in a dialog. Unlike the scripts it never refuses
+a name clash: the moved item gets a timestamp added to its name instead.
+
+Build it on any OS with Go 1.22 or later (standard library only):
+
+```sh
+cd tools/g-drive-cleanup
+go test ./...
+GOOS=windows GOARCH=amd64 go build -ldflags "-H=windowsgui -s -w" -o g-drive-cleanup.exe .
+```
+
+Users double-click `g-drive-cleanup.exe` once and answer "Yes": it copies itself to
+`%LOCALAPPDATA%\Programs\g-drive-cleanup\` and adds the menu under `HKEY_CURRENT_USER`, so no admin rights are
+needed. Double-clicking it again offers to remove the menu. On Windows 11 the entry is under "Show more
+options". The exe is not signed, so SmartScreen may warn the first time it is run.
+
 ## Running
 
 ```sh
