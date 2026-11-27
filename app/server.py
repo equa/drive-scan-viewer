@@ -195,7 +195,7 @@ class View:
         fl = scan.flags[n]
         out = {
             "r": self.ref(scan, n),
-            "n": scan.name(n),
+            "n": display_name(scan, n),
             "s": self.size(scan, n),
             "i": scan.items[n],
             "m": scan.mtime[n],
@@ -227,7 +227,7 @@ class View:
             out.append({"r": "", "n": "All scans"})
         if scan is not None:
             for i in scan.ancestors(n):
-                out.append({"r": self.ref(scan, i), "n": scan.name(i)})
+                out.append({"r": self.ref(scan, i), "n": display_name(scan, i)})
         return out
 
     def subtrees(self, scan: Scan | None, n: int):
@@ -246,6 +246,11 @@ def display_path(scan: Scan, n: int) -> str:
                 rest = rest.replace("/", "\\")
             return dst.rstrip("\\/") + rest
     return p
+
+
+def display_name(scan: Scan, n: int) -> str:
+    # The scan root's name is the full scanned path, so it needs PATH_MAP as well
+    return display_path(scan, 0) if n == 0 else scan.name(n)
 
 
 # -- API endpoints -------------------------------------------------------
