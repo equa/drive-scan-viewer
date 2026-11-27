@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """Run one ncdu scan per sub-directory of a root, writing <name>.json into a data dir.
+With --as-one the root itself is scanned into a single <name>.json instead.
 
 Log goes to DATA_DIR/scan-users.log and to the terminal.
 """
@@ -7,6 +8,7 @@ Log goes to DATA_DIR/scan-users.log and to the terminal.
 from pathlib import Path
 import argparse
 import logging
+import os
 import random
 import re
 import subprocess
@@ -96,6 +98,14 @@ def scan_subdirs(root: Path, data_dir: Path, max_dirs: int | None = None) -> int
     return failed
 
 
+def scan_one(root: Path, data_dir: Path) -> int:
+    # Same file name as scan_subdirs gives this folder, so a re-scan replaces the old one
+    if not root.is_dir():
+        raise NotADirectoryError(f"not a directory: {root}")
+    root = Path(os.path.normpath(root.absolute()))  # so "." and ".." get a real name
+    return 0 if run_scanner(root, data_dir / (clean_name(root.name) + ".json")) else 1
+
+
 def parse_args():
     parser = argparse.ArgumentParser(
         description="Run one ncdu scan per sub-folder of ROOT and write <name>.json into DATA_DIR. "
@@ -106,7 +116,11 @@ def parse_args():
                         help="where the .json files and the log go (default: current directory)")
     parser.add_argument("--max-dirs", type=int, metavar="N",
                         help="test mode: scan only N randomly chosen sub-folders")
+    parser.add_argument("--as-one", action="store_true",
+                        help="scan ROOT itself into one <name>.json, e.g. to re-scan a single user")
     args = parser.parse_args()
+    if args.as_one and args.max_dirs is not None:
+        parser.error("--max-dirs cannot be combined with --as-one")
     if args.max_dirs is not None and args.max_dirs < 1:
         parser.error("--max-dirs must be at least 1")
     if not args.data_dir.is_dir():
@@ -120,7 +134,10 @@ def main():
 
     log.info("Start: %s -> %s", args.root, args.data_dir)
     try:
-        failed = scan_subdirs(args.root, args.data_dir, args.max_dirs)
+        if args.as_one:
+            failed = scan_one(args.root, args.data_dir)
+        else:
+            failed = scan_subdirs(args.root, args.data_dir, args.max_dirs)
     except OSError as e:
         log.error("Cannot read %s: %s", args.root, e)
         return 1

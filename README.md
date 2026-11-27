@@ -11,9 +11,11 @@ nice -19 ncdu -e -x -o /path/to/data/users-username.json /<drive path>/Users/use
 nice -19 ncdu -e -x -o- /<drive path>/Projects | gzip > /path/to/data/projects.json.gz # compressed is also supported
 ```
 
-`tools/scan-users.py [--max-dirs N] [ROOT] [DATA_DIR]` runs one scan per sub-folder of `ROOT` (for example
+`tools/scan-users.py [--max-dirs N | --as-one] [ROOT] [DATA_DIR]` runs one scan per sub-folder of `ROOT` (for example
 every user directory) and logs to `DATA_DIR/scan-users.log`. Each file is renamed into place only when its
 scan is done. `--max-dirs N` scans only N randomly chosen sub-folders, for a trial run.
+`--as-one` scans `ROOT` itself into a single file named after it, for example to re-scan one user:
+it gets the same file name as in a full run, so it replaces that user's previous scan.
 
 Any `*.json` or `*.json.gz` file under `data/` (subfolders included) appears in the scan picker.
 You can select several at once: they are shown side by side under an "All selected scans" root.
