@@ -19,6 +19,24 @@ Any `*.json` or `*.json.gz` file under `data/` (subfolders included) appears in 
 You can select several at once: they are shown side by side under an "All selected scans" root.
 A changed file is reloaded automatically the next time someone opens it.
 
+## Archiving and trashing
+
+Create the two folders `0_ARCHIVE___` and `0_TRASH___` at the top of the drive (or of whatever level should
+count as the top). `tools/g-drive-cleanup.py` finds them by searching upwards from the current directory and
+moves things into them, keeping their path below the top. Because the paths are relative to the top, the same
+script works on Linux (`/<drive path>`) and on Windows (`G:\`):
+
+```sh
+cd <top>/Users/x/Projects/A
+g-drive-cleanup.py --archive cfd docs    # -> <top>/0_ARCHIVE___/Users/x/Projects/A/{cfd,docs}
+g-drive-cleanup.py --trash old-runs      # -> <top>/0_TRASH___/Users/x/Projects/A/old-runs
+g-drive-cleanup.py --restore cfd         # back again (--from archive|trash if it is in both)
+```
+
+`-n` shows the moves without making them. An existing target is an error unless `--keep-both` is given, which
+adds a timestamp to the name. Moves are plain renames and fail rather than copy across drives. Each move is
+logged to `cleanup.log` in the archive or trash folder.
+
 ## Running
 
 ```sh
